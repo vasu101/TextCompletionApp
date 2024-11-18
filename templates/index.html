@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text Completion</title>
+    <link rel="stylesheet" href="../static/styles.css">
+</head>
+<body>
+    <header>
+        <div class="logo">MyLogo</div>
+        <div class="user-greeting">Hello, User!</div>
+    </header>
+
+    <main>
+        <div class="chat-container">
+            <h1 class="header-message" id="placeholder-text">What's on your mind?</h1>
+            <div class="input-box">
+                <input type="text" id="prompt-input" placeholder=" " autocomplete="off">
+                <button id="submit-btn">Send</button>
+            </div>
+            <div class="output-container">
+                <p id="generated-text">Generated text will appear here...</p>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 MyWebsite. All rights reserved.</p>
+    </footer>
+
+    <script>
+        const placeholderText = document.getElementById('placeholder-text');
+        const headerMessage = document.querySelector('.header-message');
+        const phrases = ["What's on your mind?"];
+        let i = 0, j = 0, typing = true;
+    
+        function typeAnimation() {
+            if (j <= phrases[0].length && typing) {
+                headerMessage.textContent = phrases[0].substring(0, j++);
+            } else {
+                typing = false; 
+                return;
+            }
+            setTimeout(typeAnimation, 150);
+        }
+    
+        typeAnimation(); 
+        // Handle Send Button Click
+        document.getElementById('submit-btn').addEventListener('click', async () => {
+            const input = document.getElementById('prompt-input').value;
+            const outputField = document.getElementById('generated-text');
+
+            if (!input) {
+                outputField.textContent = "Please enter a prompt!";
+                return;
+            }
+
+            outputField.textContent = "Generating text...";
+
+            try {
+                const response = await fetch('/generate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams({ prompt: input }),
+                });
+
+                const data = await response.json();
+                if (data.generated_text) {
+                    outputField.textContent = data.generated_text;
+                } else {
+                    outputField.textContent = "Error generating text. Try again.";
+                }
+            } catch (error) {
+                console.error("Error:", error);
+                outputField.textContent = "An error occurred. Please try again later.";
+            }
+        });
+    </script>
+    
+</body>
+</html>
